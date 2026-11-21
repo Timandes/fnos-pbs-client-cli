@@ -4,6 +4,12 @@
 `/var/apps/fnos-pbs-client-cli/target/bin/proxmox-backup-client`。
 图形界面（GUI）后续会作为独立软件包开发。本项目并非 Proxmox 或飞牛 fnOS 的官方发布。
 
+## 许可证
+
+本仓库自行编写的打包脚本、测试、工作流和文档采用 [Apache License 2.0](LICENSE)。本仓库不包含 Proxmox Backup Client 的源码或二进制。
+
+FPK 中另行打包的 Proxmox Backup Client 是独立的上游程序，保持 [AGPL-3.0-or-later](https://www.gnu.org/licenses/agpl-3.0.html) 及其所含第三方组件各自的许可证；本仓库的 Apache-2.0 不适用于它们。打包会保留上游 Debian 软件包的版权和许可证声明。公开分发 FPK 时，仍须履行相应的许可证义务，包括提供与该二进制对应的源码和必要的构建材料。
+
 ## 当前进展
 
 应用版本 0.1.0 的 x86-64 本地调试 FPK 已构建。构建前验证了 Proxmox Backup Client 静态 Debian 软件包 4.0.11-1，再用官方 fnpack v1.3.3 打包。固定的版本、来源和校验值见
