@@ -1,4 +1,4 @@
-appname=fnos-pbs-client-cli
+appname=fnos-proxmox-backup-client
 version=0.1.0
 display_name=Proxmox Backup Client
 desc=独立的离线安装包，包含官方 Proxmox Backup Client 静态命令行工具；不运行后台服务。

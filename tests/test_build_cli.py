@@ -108,7 +108,7 @@ SHA256:
         self.assertEqual(json.loads((stage / "config/resource").read_text()),
                          {"usr-local-linker": {"bin": ["bin/proxmox-backup-client"]}})
         manifest = (stage / "manifest").read_text()
-        self.assertIn("appname=fnos-pbs-client-cli", manifest.splitlines())
+        self.assertIn("appname=fnos-proxmox-backup-client", manifest.splitlines())
         self.assertIn("display_name=Proxmox Backup Client", manifest.splitlines())
         self.assertIn("platform=x86", manifest)
         self.assertIn("ctl_stop=false", manifest)
@@ -134,7 +134,7 @@ SHA256:
             manifest = dict(tuple(field.strip() for field in line.split("=", 1))
                             for line in fpk.extractfile("manifest").read().decode().splitlines()
                             if "=" in line)
-            self.assertEqual(manifest["appname"], "fnos-pbs-client-cli")
+            self.assertEqual(manifest["appname"], "fnos-proxmox-backup-client")
             self.assertEqual(manifest["display_name"], "Proxmox Backup Client")
             self.assertEqual(json.load(fpk.extractfile("config/resource")),
                              {"usr-local-linker": {"bin": ["bin/proxmox-backup-client"]}})

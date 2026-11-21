@@ -8,6 +8,8 @@
 
 本包面向 x86-64 版飞牛 fnOS。在应用中心选择「手动安装」，导入合适的 FPK。未签名的 `--nosign` 包仅用于本地调试，请勿发布或分发。当前尚未在 fnOS 实机验证安装、命令链接及备份恢复，也未跑通正式 Release 的签名和上传流程。
 
+> **已装过旧调试包？** 如果装过应用 ID 为 `fnos-pbs-client-cli` 的旧调试包，请先卸载旧包，再安装新包。新旧 ID 会被 fnOS 视为不同应用，不会原地升级；先卸载可避免两个包同时注册同名系统命令。
+
 ### 运行命令
 
 安装时，软件包通过 fnOS 自带的系统链接机制注册原命令名 `proxmox-backup-client`，预期链接位置为 `/usr/local/bin/proxmox-backup-client`。软件包不编辑系统或用户的 `PATH`，也不创建其他命令别名。
@@ -19,7 +21,7 @@ proxmox-backup-client version
 若当前 shell 的 `PATH` 不包含 `/usr/local/bin`，可直接使用软件包内的绝对路径：
 
 ```sh
-/var/apps/fnos-pbs-client-cli/target/bin/proxmox-backup-client version
+/var/apps/fnos-proxmox-backup-client/target/bin/proxmox-backup-client version
 ```
 
 ### 许可证
@@ -30,7 +32,7 @@ FPK 中另行打包的 Proxmox Backup Client 是独立的上游程序，保持 [
 
 ## 开发者手册
 
-应用 ID 保持为 `fnos-pbs-client-cli`，不随显示名称变更。系统命令由 [fnOS 应用资源](https://developer.fnnas.com/docs/core-concepts/resource/) 中的 `usr-local-linker.bin` 声明，仅指向 `bin/proxmox-backup-client`；链接由系统管理，不在安装脚本中自行探测或处理同名命令。
+应用 ID 为 `fnos-proxmox-backup-client`，显示名称为 `Proxmox Backup Client`，GitHub 仓库仍是 `Timandes/fnos-pbs-client-cli`。系统命令由 [fnOS 应用资源](https://developer.fnnas.com/docs/core-concepts/resource/) 中的 `usr-local-linker.bin` 声明，仅指向 `bin/proxmox-backup-client`；链接由系统管理，不在安装脚本中自行探测或处理同名命令。
 
 ### 当前进展
 
@@ -67,10 +69,10 @@ python3 scripts/build_cli.py \
   cd dist/cli-stage
   /absolute/path/to/official/fnpack build --nosign
   # 即使 fnpack 返回成功状态，也要确认生成了预期的产物。
-  test -s fnos-pbs-client-cli.fpk || exit 1
-  tar -tzf fnos-pbs-client-cli.fpk
-  tar -xOzf fnos-pbs-client-cli.fpk app.tgz | tar -tzf -
-  sha256sum fnos-pbs-client-cli.fpk > fnos-pbs-client-cli.fpk.sha256
+  test -s fnos-proxmox-backup-client.fpk || exit 1
+  tar -tzf fnos-proxmox-backup-client.fpk
+  tar -xOzf fnos-proxmox-backup-client.fpk app.tgz | tar -tzf -
+  sha256sum fnos-proxmox-backup-client.fpk > fnos-proxmox-backup-client.fpk.sha256
 )
 ```
 
@@ -80,7 +82,7 @@ python3 scripts/build_cli.py \
 
 ```sh
 cd dist/cli-stage
-tar -xOzf fnos-pbs-client-cli.fpk app.tgz | tar -xOzf - bin/proxmox-backup-client | sha256sum
+tar -xOzf fnos-proxmox-backup-client.fpk app.tgz | tar -xOzf - bin/proxmox-backup-client | sha256sum
 sha256sum app/bin/proxmox-backup-client
 ```
 
@@ -95,7 +97,7 @@ FNPACK_TEST_BIN=/absolute/path/to/official/fnpack python3 -m unittest discover -
 不设置 `FNPACK_TEST_BIN` 时，仅跳过调用真实 fnpack 的测试。测试会在绕开真实签名输入的情况下使用专门构造的索引和软件包样本，并另外检查无效签名和错误密钥环是否被拒绝。这些样本测试不验证任何特定的上游发行版本。测试和打包准备过程都不会执行软件包维护脚本。测试使用的模拟二进制只有合成的 ELF 头，不能作为客户端使用。
 
 请在获授权的测试 fnOS 设备上离线手动安装实际构建的包，以应用自己的运行账户执行
-`/var/apps/fnos-pbs-client-cli/target/bin/proxmox-backup-client version`，
+`/var/apps/fnos-proxmox-backup-client/target/bin/proxmox-backup-client version`，
 分别验证 DNS 解析和 TLS 校验，并将获准使用的测试文件备份到隔离的命名空间。恢复到空目录后比较校验值，同时检查全局命令链接是否正确建立、升级/卸载时是否由系统正确管理。不要为了让测试通过而授予 root 权限、放宽文件权限或降低 TLS 校验要求。
 
 ### GitHub Actions 和 Release 发布

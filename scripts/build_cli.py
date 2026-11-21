@@ -15,7 +15,7 @@ import subprocess
 import tempfile
 
 
-APP = "fnos-pbs-client-cli"
+APP = "fnos-proxmox-backup-client"
 PACKAGE = "proxmox-backup-client-static"
 TRIXIE_KEY_SHA256 = "136673be77aba35dcce385b28737689ad64fd785a797e57897589aed08db6e45"
 TEMPLATE = Path(__file__).resolve().parents[1] / "packages" / "cli"

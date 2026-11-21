@@ -73,5 +73,5 @@ jobs:
         working-directory: ${{ runner.temp }}/fpk-signed
         run: |
           set -euo pipefail
-          sha256sum --check fnos-pbs-client-cli.fpk.sha256
-          gh release upload "$RELEASE_TAG" fnos-pbs-client-cli.fpk fnos-pbs-client-cli.fpk.sha256
+          sha256sum --check fnos-proxmox-backup-client.fpk.sha256
+          gh release upload "$RELEASE_TAG" fnos-proxmox-backup-client.fpk fnos-proxmox-backup-client.fpk.sha256
