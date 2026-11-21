@@ -1,0 +1,13 @@
+{
+  "package": "proxmox-backup-client-static",
+  "version": "4.0.11-1",
+  "architecture": "amd64",
+  "distribution": "trixie/main",
+  "repository": "https://download.proxmox.com/debian/pbs-client",
+  "filename": "dists/trixie/main/binary-amd64/proxmox-backup-client-static_4.0.11-1_amd64.deb",
+  "package_sha256": "c290650da2591c559bbc4f013dda1677a970d2ffe02ae0a0958723f2b4bae121",
+  "binary_sha256": "98015fb734bf4ab6c46d110bda6016fdd9de68cd174058c105a5fbd549ac086b",
+  "inrelease_sha256": "363a0198fb298a6ae25450a041ff235a42ba5c23114e3f92fd22a225a49aff67",
+  "index_sha256": "f37edeec48fd174082915ebdbf831c0a7532ddc568def4dd0a9c22c798d766d5",
+  "distribution_status": "private-test-only"
+}

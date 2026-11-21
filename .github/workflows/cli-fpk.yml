@@ -1,0 +1,77 @@
+name: CLI FPK
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cli-fpk-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Test packaging and release safeguards
+        run: python3 -m unittest discover -s tests -v
+      - name: Build and verify native FPK (local debug, not uploaded)
+        run: python3 -m scripts.ci build --output "$RUNNER_TEMP/fpk-debug"
+
+  publish:
+    if: github.event_name == 'release'
+    needs: verify
+    runs-on: ubuntu-24.04
+    environment: fpk-release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Require reviewed corresponding source on the same release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          source=$(python3 -m scripts.ci release-source --tag "$RELEASE_TAG")
+          mkdir -m 700 "$RUNNER_TEMP/fpk-source"
+          gh release download "$RELEASE_TAG" --pattern "$source" --dir "$RUNNER_TEMP/fpk-source"
+          python3 -m scripts.ci release-source --tag "$RELEASE_TAG" --verify "$RUNNER_TEMP/fpk-source/$source"
+      - name: Build with official fnpack and developer signing material
+        env:
+          FNPACK_KEY_B64: ${{ secrets.FNPACK_KEY_B64 }}
+          FNPACK_CERT_B64: ${{ secrets.FNPACK_CERT_B64 }}
+        run: |
+          set -euo pipefail
+          test -n "$FNPACK_KEY_B64" && test -n "$FNPACK_CERT_B64" || {
+            echo 'Official fnOS developer signing secrets are required in fpk-release.' >&2
+            exit 1
+          }
+          umask 077
+          signing=$(mktemp -d)
+          trap 'rm -f "$signing/developer.key" "$signing/developer.crt"; rmdir "$signing"' EXIT
+          printf '%s' "$FNPACK_KEY_B64" | base64 --decode > "$signing/developer.key"
+          printf '%s' "$FNPACK_CERT_B64" | base64 --decode > "$signing/developer.crt"
+          unset FNPACK_KEY_B64 FNPACK_CERT_B64
+          python3 -m scripts.ci build --output "$RUNNER_TEMP/fpk-signed" --key "$signing/developer.key" --cert "$signing/developer.crt"
+      - name: Publish signed package and SHA-256
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        working-directory: ${{ runner.temp }}/fpk-signed
+        run: |
+          set -euo pipefail
+          sha256sum --check fnos-pbs-client-cli.fpk.sha256
+          gh release upload "$RELEASE_TAG" fnos-pbs-client-cli.fpk fnos-pbs-client-cli.fpk.sha256
