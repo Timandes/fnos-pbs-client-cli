@@ -1,1 +1,5 @@
-{}
+{
+  "usr-local-linker": {
+    "bin": ["bin/proxmox-backup-client"]
+  }
+}

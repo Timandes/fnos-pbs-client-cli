@@ -1,6 +1,6 @@
 appname=fnos-pbs-client-cli
 version=0.1.0
-display_name=PBS 客户端（CLI）
+display_name=Proxmox Backup Client
 desc=独立的离线安装包，包含官方 Proxmox Backup Client 静态命令行工具；不运行后台服务。
 maintainer=Timandes
 maintainer_url=https://github.com/Timandes

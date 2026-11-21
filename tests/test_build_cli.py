@@ -105,8 +105,11 @@ SHA256:
             self.assertEqual(struct.unpack_from(">II", png, 16), (size, size))
         self.assertEqual(json.loads((stage / "config/privilege").read_text()),
                          {"defaults": {"run-as": "package"}})
-        self.assertEqual(json.loads((stage / "config/resource").read_text()), {})
+        self.assertEqual(json.loads((stage / "config/resource").read_text()),
+                         {"usr-local-linker": {"bin": ["bin/proxmox-backup-client"]}})
         manifest = (stage / "manifest").read_text()
+        self.assertIn("appname=fnos-pbs-client-cli", manifest.splitlines())
+        self.assertIn("display_name=Proxmox Backup Client", manifest.splitlines())
         self.assertIn("platform=x86", manifest)
         self.assertIn("ctl_stop=false", manifest)
         self.assertTrue((stage / "wizard").is_dir())
@@ -128,6 +131,13 @@ SHA256:
         with tarfile.open(stage / f"{b.APP}.fpk") as fpk:
             self.assertTrue({"app.tgz", "manifest", "ICON.PNG", "ICON_256.PNG"}.issubset(
                 fpk.getnames()))
+            manifest = dict(tuple(field.strip() for field in line.split("=", 1))
+                            for line in fpk.extractfile("manifest").read().decode().splitlines()
+                            if "=" in line)
+            self.assertEqual(manifest["appname"], "fnos-pbs-client-cli")
+            self.assertEqual(manifest["display_name"], "Proxmox Backup Client")
+            self.assertEqual(json.load(fpk.extractfile("config/resource")),
+                             {"usr-local-linker": {"bin": ["bin/proxmox-backup-client"]}})
             compressed_app = fpk.extractfile("app.tgz").read()
         with tarfile.open(fileobj=io.BytesIO(compressed_app)) as app:
             client = "bin/proxmox-backup-client"

@@ -1,23 +1,45 @@
-# 飞牛 fnOS 的 PBS 客户端（CLI）
+# Proxmox Backup Client（飞牛 fnOS）
 
-这是一个第三方飞牛 fnOS 应用打包项目，仅包含命令行客户端（CLI）。安装时不会访问网络、添加 APT 源、执行 Debian 软件包维护脚本、注册全局命令或启动后台服务。安装后的预期可执行文件路径为
-`/var/apps/fnos-pbs-client-cli/target/bin/proxmox-backup-client`。
-图形界面（GUI）后续会作为独立软件包开发。本项目并非 Proxmox 或飞牛 fnOS 的官方发布。
+这是一个面向飞牛 fnOS 的第三方打包项目，仅包含 Proxmox Backup Client 命令行客户端，不含图形界面或后台服务。安装无需联网，不会添加 APT 源或执行 Debian 软件包维护脚本。本项目并非 Proxmox 或飞牛 fnOS 的官方发布。
 
-## 许可证
+## 用户手册
+
+### 安装
+
+本包面向 x86-64 版飞牛 fnOS。在应用中心选择「手动安装」，导入合适的 FPK。未签名的 `--nosign` 包仅用于本地调试，请勿发布或分发。当前尚未在 fnOS 实机验证安装、命令链接及备份恢复，也未跑通正式 Release 的签名和上传流程。
+
+### 运行命令
+
+安装时，软件包通过 fnOS 自带的系统链接机制注册原命令名 `proxmox-backup-client`，预期链接位置为 `/usr/local/bin/proxmox-backup-client`。软件包不编辑系统或用户的 `PATH`，也不创建其他命令别名。
+
+```sh
+proxmox-backup-client version
+```
+
+若当前 shell 的 `PATH` 不包含 `/usr/local/bin`，可直接使用软件包内的绝对路径：
+
+```sh
+/var/apps/fnos-pbs-client-cli/target/bin/proxmox-backup-client version
+```
+
+### 许可证
 
 本仓库自行编写的打包脚本、测试、工作流和文档采用 [Apache License 2.0](LICENSE)。本仓库不包含 Proxmox Backup Client 的源码或二进制。
 
 FPK 中另行打包的 Proxmox Backup Client 是独立的上游程序，保持 [AGPL-3.0-or-later](https://www.gnu.org/licenses/agpl-3.0.html) 及其所含第三方组件各自的许可证；本仓库的 Apache-2.0 不适用于它们。打包会保留上游 Debian 软件包的版权和许可证声明。公开分发 FPK 时，仍须履行相应的许可证义务，包括提供与该二进制对应的源码和必要的构建材料。
 
-## 当前进展
+## 开发者手册
+
+应用 ID 保持为 `fnos-pbs-client-cli`，不随显示名称变更。系统命令由 [fnOS 应用资源](https://developer.fnnas.com/docs/core-concepts/resource/) 中的 `usr-local-linker.bin` 声明，仅指向 `bin/proxmox-backup-client`；链接由系统管理，不在安装脚本中自行探测或处理同名命令。
+
+### 当前进展
 
 应用版本 0.1.0 的 x86-64 本地调试 FPK 已构建。构建前验证了 Proxmox Backup Client 静态 Debian 软件包 4.0.11-1，再用官方 fnpack v1.3.3 打包。固定的版本、来源和校验值见
 `upstream/pbs-client-trixie-amd64.lock.json`。
 从 FPK 中读回的客户端与上游文件逐字节一致；在隔离了主目录的 Linux 环境中，以非 root 用户成功运行了 `version`。
 [首次 GitHub Actions 构建](https://github.com/Timandes/fnos-pbs-client-cli/actions/runs/44875035310)已通过，但尚未在 fnOS 实机验证安装、备份和恢复，也未验证正式 Release 的签名和上传流程。请勿发布或分发未签名的调试包。
 
-## 使用已验证的离线材料构建
+### 使用已验证的离线材料构建
 
 构建环境需要 Linux x86-64、Python 3.11 或更高版本、GnuPG、`dpkg-deb`、`tar` 和[官方 fnpack](https://developer.fnnas.com/docs/cli/fnpack/) v1.3.3。构建无需 root 权限，也不会修改主机的 APT 配置。
 
@@ -64,24 +86,7 @@ sha256sum app/bin/proxmox-backup-client
 
 分发任何二进制包前，应保留上游和依赖的许可证及版权声明，核实并随包提供与该版本完全对应的 Proxmox 及所包含依赖的源码，以及所需的构建材料。打包脚本会保留上游 Debian 软件包的声明并记录二进制来源，但不会确认源码分发合规性，也不会分发软件包。
 
-## 安装后调用客户端
-
-安装包不会修改系统的 `PATH`。安装后可直接通过绝对路径调用客户端：
-
-```sh
-/var/apps/fnos-pbs-client-cli/target/bin/proxmox-backup-client version
-```
-
-如希望在当前终端会话中直接输入命令名，可自行将目录追加到 `PATH`：
-
-```sh
-export PATH="$PATH:/var/apps/fnos-pbs-client-cli/target/bin"
-proxmox-backup-client version
-```
-
-上面的 `export` 只影响当前会话。如希望以后打开终端也生效，可以自行将这一行加入当前用户的 shell 启动配置，不需要修改系统级配置或软件包。
-
-## 验证
+### 验证
 
 ```sh
 FNPACK_TEST_BIN=/absolute/path/to/official/fnpack python3 -m unittest discover -s tests -v
@@ -91,9 +96,9 @@ FNPACK_TEST_BIN=/absolute/path/to/official/fnpack python3 -m unittest discover -
 
 请在获授权的测试 fnOS 设备上离线手动安装实际构建的包，以应用自己的运行账户执行
 `/var/apps/fnos-pbs-client-cli/target/bin/proxmox-backup-client version`，
-分别验证 DNS 解析和 TLS 校验，并将获准使用的测试文件备份到隔离的命名空间。恢复到空目录后比较校验值，同时检查卸载和升级行为。不要为了让测试通过而授予 root 权限、放宽文件权限或降低 TLS 校验要求。
+分别验证 DNS 解析和 TLS 校验，并将获准使用的测试文件备份到隔离的命名空间。恢复到空目录后比较校验值，同时检查全局命令链接是否正确建立、升级/卸载时是否由系统正确管理。不要为了让测试通过而授予 root 权限、放宽文件权限或降低 TLS 校验要求。
 
-## GitHub Actions 和 Release 发布
+### GitHub Actions 和 Release 发布
 
 向 `main` 推送或提交拉取请求时，CLI FPK 工作流会运行构建检查，不访问发布密钥，也不会上传未签名的调试包。它下载官方 fnpack v1.3.3，按固定的 SHA-256 验证后才执行；随后验证 Proxmox 仓库的签名及固定版本 4.0.11-1 的 Debian 软件包。构建完成后，工作流重新读取 FPK，核对包内二进制和版权声明。上游下载失败、仓库元数据与固定的软件包不一致，或任一步验证失败，任务都会停止，不会改用其他来源或跳过检查。
 
